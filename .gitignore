@@ -1,0 +1,12 @@
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary & system generated
+.system_generated/
+*.log
+scratch/
+__pycache__/
+*.pyc

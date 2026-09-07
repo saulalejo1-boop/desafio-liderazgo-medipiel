@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafío de Liderazgo | Medipiel</title>
+  <meta name="description" content="5 días · 15 decisiones · una oportunidad para transformar tu manera de liderar en Medipiel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="welcome-bg-body">
+  <!-- Global Canvas for Confetti -->
+  <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+  <div id="app" class="app-container">
+    <!-- TOP HEADER (Visible in inner views) -->
+    <header id="main-header" class="main-header hidden">
+      <div class="header-inner">
+        <div class="header-left">
+          <button id="btn-back-to-map" class="btn-icon" title="Volver a la portada de inicio" aria-label="Volver a la portada de inicio">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span class="btn-back-text">Inicio</span>
+          </button>
+          <img src="logo.png" alt="MDP by Medipiel" class="header-logo" id="header-logo-img">
+        </div>
+
+        <div class="header-center">
+          <span id="header-user-badge" class="header-user-pill">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="header-user-name">Participante</span>
+          </span>
+          <span id="header-day-label" class="header-day-badge">Día 1 de 5</span>
+        </div>
+
+        <div class="header-right">
+          <div class="progress-wrap">
+            <div class="progress-text-row">
+              <span class="progress-title">Progreso</span>
+              <span id="header-progress-percent" class="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="header-progress-bar">
+              <div id="header-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="main-content-wrapper">
+
+      <!-- ============================================== -->
+      <!-- 1. WELCOME SCREEN (100% Exact Mockup Match) -->
+      <!-- ============================================== -->
+      <section id="welcome-screen" class="view-section active">
+        
+        <!-- Ambient Floating Sparkle Particles Container -->
+        <div class="ambient-particles" id="welcome-particles" aria-hidden="true"></div>
+
+        <!-- Organic Decorative Backdrop - 100% Seamless Top-to-Bottom Coverage -->
+        <div class="welcome-organic-backdrop backdrop-breathe-anim" aria-hidden="true">
+          <svg class="organic-backdrop-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="medipielWaveGrad" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.94" />
+                <stop offset="35%" stop-color="#F2FAFA" stop-opacity="0.88" />
+                <stop offset="70%" stop-color="#E2F6F6" stop-opacity="0.68" />
+                <stop offset="100%" stop-color="#CEEFEF" stop-opacity="0.45" />
+              </linearGradient>
+              <filter id="softWaveGlow" x="-5%" y="-5%" width="120%" height="120%">
+                <feDropShadow dx="8" dy="0" stdDeviation="12" flood-color="rgba(1, 96, 109, 0.05)" />
+              </filter>
+            </defs>
+            <path d="M 0,0 L 520,0 C 600,220 440,420 480,680 C 510,820 620,930 760,1000 L 0,1000 Z" fill="url(#medipielWaveGrad)" filter="url(#softWaveGlow)" />
+          </svg>
+        </div>
+
+        <!-- Organic Bottom Sweep Wave (Translucent so mountains show through) -->
+        <div class="welcome-bottom-sweep" aria-hidden="true">
+          <svg class="bottom-sweep-svg" viewBox="0 0 1440 220" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="bottomSweepGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#D4F4F4" stop-opacity="0.65" />
+                <stop offset="45%" stop-color="#E2F8F8" stop-opacity="0.45" />
+                <stop offset="75%" stop-color="#EBFBFB" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <path d="M 0,60 C 320,10 640,90 960,40 C 1180,10 1320,50 1440,30 L 1440,220 L 0,220 Z" fill="url(#bottomSweepGrad)" />
+          </svg>
+        </div>
+
+        <!-- LEFT SIDE BRAND & MOTIVATIONAL CONTENT -->
+        <aside class="welcome-sidebar-left">
+          <div class="top-brand-logo anim-reveal-down">
+            <img src="logo.png" alt="mdp by medipiel" class="mockup-brand-logo">
+          </div>
+
+          <div class="mockup-inspire-block">
+            <h2 class="inspire-title anim-reveal-up" style="--anim-delay: 0.15s;">
+              <span>Liderar</span>
+              <span>también</span>
+              <span class="script-highlight anim-script-pop" style="--anim-delay: 0.3s;">es inspirar</span>
+            </h2>
+            <div class="cyan-accent-line anim-expand-line" style="--anim-delay: 0.4s;"></div>
+            <p class="inspire-desc anim-reveal-fade" style="--anim-delay: 0.45s;">
+              Pequeñas decisiones<br>
+              también generan<br>
+              grandes cambios.
+            </p>
+          </div>
+
+          <div class="mockup-pillar-bottom-left anim-reveal-fade" style="--anim-delay: 0.55s;">
+            <div class="pillar-content">
+              <span>EL LIDERAZGO</span>
+              <span>TAMBIÉN SE</span>
+              <span>APRENDE</span>
+            </div>
+            <div class="cyan-accent-mini-line anim-expand-line" style="--anim-delay: 0.65s;"></div>
+          </div>
+        </aside>
+
+        <!-- CENTER FLOATING MOCKUP CARD -->
+        <div class="welcome-center-card-wrap">
+          <div class="mockup-center-card anim-reveal-card" id="mockup-interactive-card">
+            
+            <!-- Mobile Brand Logo (Visible on mobile/tablet) -->
+            <div class="welcome-mobile-logo anim-stagger-item" style="--stagger-idx: 0;">
+              <img src="logo.png" alt="MDP by Medipiel" class="mockup-mobile-brand-logo">
+            </div>
+
+            <!-- Top Pill Badge -->
+            <div class="mockup-pill-badge anim-stagger-item" style="--stagger-idx: 1;">
+              <span class="mockup-pill-dot"></span>
+              EXPERIENCIA DE APRENDIZAJE MEDIPIEL
+            </div>
+
+            <!-- Title -->
+            <div class="mockup-header-titles anim-stagger-item" style="--stagger-idx: 2;">
+              <span class="title-top-sub">DESAFÍO DE</span>
+              <h1 class="title-main">LIDERAZGO</h1>
+            </div>
+
+            <!-- Subtitle -->
+            <p class="mockup-tagline anim-stagger-item" style="--stagger-idx: 3;">
+              5 días · <strong class="text-cyan">15 decisiones</strong> · una oportunidad<br>
+              para transformar tu manera de liderar.
+            </p>
+
+            <!-- Description Box with Team Icon -->
+            <div class="mockup-intro-box anim-stagger-item" style="--stagger-idx: 4;">
+              <div class="intro-icon-circle">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <p class="intro-box-text">
+                Durante los próximos 5 días enfrentarás situaciones reales de liderazgo. Lee, decide, reflexiona y descubre qué comportamientos quieres fortalecer.
+              </p>
+            </div>
+
+            <!-- Full Name Registration Box -->
+            <div class="mockup-user-input-card anim-stagger-item" style="--stagger-idx: 5;">
+              <div class="user-card-heading">
+                <div class="user-card-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <label for="user-fullname-input" class="user-card-label">
+                  <strong>Ingresa tu nombre completo para comenzar:</strong>
+                </label>
+              </div>
+
+              <div class="user-card-field-wrap">
+                <input 
+                  type="text" 
+                  id="user-fullname-input" 
+                  class="mockup-fullname-input" 
+                  placeholder="Ej: Saúl Múnera" 
+                  autocomplete="name"
+                  maxlength="80"
+                />
+                <span id="user-name-error" class="input-error-msg hidden">Por favor ingresa tu nombre completo para continuar.</span>
+              </div>
+
+              <!-- Active user / Change user row -->
+              <div id="active-user-banner" class="active-user-row hidden">
+                <span class="active-user-text">Participante activo: <strong id="active-user-display-name"></strong></span>
+                <button id="btn-change-user" class="btn-change-user-link" type="button">
+                  Cambiar participante
+                </button>
+              </div>
+            </div>
+
+            <!-- 3 Feature Mini Cards -->
+            <div class="mockup-features-grid anim-stagger-item" style="--stagger-idx: 6;">
+              <!-- Feature 1: Calendar -->
+              <div class="feature-mini-card">
+                <div class="feature-mini-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <div class="feature-mini-content">
+                  <strong>5 Días de Reto</strong>
+                  <span>Progresión guiada día a día</span>
+                </div>
+              </div>
+
+              <!-- Feature 2: Document -->
+              <div class="feature-mini-card">
+                <div class="feature-mini-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
+                <div class="feature-mini-content">
+                  <strong>15 Casos Reales</strong>
+                  <span>Situaciones de liderazgo en tienda</span>
+                </div>
+              </div>
+
+              <!-- Feature 3: Lightbulb -->
+              <div class="feature-mini-card">
+                <div class="feature-mini-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"></path>
+                    <path d="M10 22h4"></path>
+                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                  </svg>
+                </div>
+                <div class="feature-mini-content">
+                  <strong>Sin Respuestas Correctas</strong>
+                  <span>Autoconocimiento y reflexión</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button with Shimmer -->
+            <div class="mockup-action-wrap anim-stagger-item" style="--stagger-idx: 7;">
+              <button id="btn-start-challenge" class="mockup-btn-primary btn-shimmer-interactive">
+                <span id="btn-start-challenge-text">CONTINUAR DESAFÍO</span>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="btn-arrow-icon">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT SIDE MOTIVATIONAL CONTENT -->
+        <aside class="welcome-sidebar-right">
+          <!-- Bottom Right Handwriting Cursive Text -->
+          <div class="mockup-handwriting-bottom-right anim-reveal-right" style="--anim-delay: 0.6s;">
+            <span class="cursive-line">Juntos</span>
+            <span class="cursive-line">llegamos</span>
+            <span class="cursive-line">más lejos</span>
+            <div class="cursive-underline-accent anim-expand-line" style="--anim-delay: 0.8s;"></div>
+          </div>
+        </aside>
+
+        <!-- Bottom Centered Footer Note -->
+        <div class="welcome-bottom-footer-note anim-reveal-fade" style="--anim-delay: 0.85s;">
+          <span>MDP by Medipiel · Experiencia de Aprendizaje</span>
+          <button id="btn-welcome-admin" class="welcome-admin-icon-btn" title="Acceso Portal Admin" aria-label="Portal Admin">
+            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 2. MAP / JOURNEY SCREEN -->
+      <!-- ============================================== -->
+      <section id="map-screen" class="view-section">
+        <div class="map-container animate-fade-in">
+          <div class="map-header-card">
+            <div class="map-header-top">
+              <img src="logo.png" alt="MDP by Medipiel" class="map-logo">
+              <div class="map-header-actions">
+                <button id="btn-open-summary" class="btn-link" title="Ver mis respuestas y reflexiones">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  <span>Mis Reflexiones</span>
+                </button>
+                <button id="btn-request-reset" class="btn-link btn-link-muted" title="Reiniciar progreso del participante actual">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                  <span>Reiniciar</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="map-hero-text">
+              <div class="map-user-greeting" id="map-user-greeting">¡Hola, Líder!</div>
+              <h2 class="map-title">Mapa de tu Recorrido</h2>
+              <p class="map-subtitle">Completa cada día para desbloquear el siguiente y transformar tu liderazgo.</p>
+            </div>
+
+            <div class="map-progress-summary">
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="map-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="map-stats-row">
+                <span id="map-progress-text">0 de 5 días completados (0%)</span>
+                <span id="map-badge-status" class="status-pill status-in-progress">En curso</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- JOURNEY TIMELINE -->
+          <div class="journey-track" id="journey-days-container">
+            <!-- Dynamically generated Day Nodes -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 3. STEP-BY-STEP CASE SCREEN -->
+      <!-- ============================================== -->
+      <section id="case-screen" class="view-section">
+        <div class="case-container animate-fade-in" id="case-container">
+          
+          <!-- Day & Step Indicators -->
+          <div class="case-stepper-card">
+            <div class="stepper-day-tag" id="case-day-tag">DÍA 1</div>
+            <div class="stepper-dots" id="case-step-dots">
+              <div class="step-dot active" data-step="1">1</div>
+              <div class="step-line"></div>
+              <div class="step-dot" data-step="2">2</div>
+              <div class="step-line"></div>
+              <div class="step-dot" data-step="3">3</div>
+            </div>
+            <div class="stepper-label" id="case-step-label">Caso 1 de 3</div>
+          </div>
+
+          <!-- Main Case Card -->
+          <div class="case-card card-shadow">
+            <div class="case-card-header">
+              <div class="case-number-badge" id="case-number-badge">Caso 1</div>
+              <h2 class="case-title" id="case-title">El día que nada sale como esperabas</h2>
+            </div>
+
+            <div class="case-situation-box">
+              <div class="situation-icon-col">
+                <div class="situation-icon-bubble">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+              </div>
+              <div class="situation-text-col">
+                <span class="situation-heading">SITUACIÓN:</span>
+                <p id="case-situation-text" class="situation-body">Cargando situación...</p>
+              </div>
+            </div>
+
+            <div class="case-question-box">
+              <h3 class="question-title">¿QUÉ HACES COMO LÍDER?</h3>
+              <p class="question-instruction">Selecciona la alternativa que más se acerca a lo que harías:</p>
+              
+              <div class="options-list" id="case-options-list" role="radiogroup" aria-label="Opciones de decisión">
+                <!-- Options A, B, C, D will be inserted dynamically -->
+              </div>
+            </div>
+
+            <!-- Case Reflection Section (Appears smoothly after selection) -->
+            <div id="case-reflection-section" class="case-reflection-drawer hidden">
+              <div class="reflection-drawer-inner">
+                <div class="reflection-subcard reflection-pause-box">
+                  <div class="reflection-icon-title">
+                    <span class="emoji-icon">💭</span>
+                    <h4>PARA REFLEXIONAR</h4>
+                  </div>
+                  <p id="case-reflection-question" class="reflection-question-text">
+                    ¿Qué necesita primero tu equipo de ti: dirección, tranquilidad, presión o acompañamiento?
+                  </p>
+                </div>
+
+                <div class="reflection-subcard behavior-box">
+                  <div class="reflection-icon-title">
+                    <span class="star-icon">✦</span>
+                    <h4>COMPORTAMIENTO QUE BUSCAMOS EVIDENCIAR</h4>
+                  </div>
+                  <p id="case-behavior-text" class="behavior-text">
+                    Resuelve desafíos con determinación y creatividad.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Case Action Navigation -->
+            <div class="case-actions">
+              <button id="btn-next-case-step" class="btn btn-primary btn-lg" disabled>
+                <span id="btn-next-case-text">Continuar</span>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 4. DAILY FINAL REFLECTION SCREEN -->
+      <!-- ============================================== -->
+      <section id="reflection-screen" class="view-section">
+        <div class="reflection-container animate-fade-in">
+          <div class="reflection-card card-shadow">
+            <div class="reflection-card-header">
+              <div class="pill-badge pill-teal">
+                <span class="pill-dot"></span>
+                CIERRE DEL DÍA
+              </div>
+              <h2 class="reflection-main-title" id="day-reflection-title">Reflexión Día 1</h2>
+            </div>
+
+            <div class="reflection-prompt-box">
+              <div class="prompt-icon-bubble">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
+              <div class="prompt-content">
+                <p id="day-reflection-prompt-text" class="prompt-text">
+                  Cargando reflexión del día...
+                </p>
+              </div>
+            </div>
+
+            <div class="reflection-input-section">
+              <div class="input-header-row">
+                <label for="day-reflection-textarea" class="input-label">
+                  <strong>Escribe tu reflexión:</strong>
+                </label>
+                <span id="char-counter" class="char-count">0 caracteres</span>
+              </div>
+
+              <textarea 
+                id="day-reflection-textarea" 
+                class="reflection-textarea" 
+                rows="6" 
+                placeholder="Escribe aquí tus reflexiones, aprendizajes y compromisos de liderazgo para este día..."
+                aria-label="Escribe tu reflexión"
+              ></textarea>
+              
+              <p class="input-helper">
+                Tus reflexiones quedarán guardadas automáticamente para que puedas revisarlas en cualquier momento.
+              </p>
+            </div>
+
+            <div class="reflection-actions">
+              <button id="btn-complete-day" class="btn btn-primary btn-lg" disabled>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span id="btn-complete-day-text">Completar Día 1</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- 5. FINAL COMPLETION SCREEN (5 Days Finished) -->
+      <!-- ============================================== -->
+      <section id="completed-screen" class="view-section">
+        <div class="completed-container animate-fade-in">
+          <div class="completed-card card-shadow">
+            <div class="completed-badge-icon">
+              <div class="trophy-circle trophy-gold" aria-label="Copa Dorada de Campeón">
+                <span class="trophy-sparkle-1" aria-hidden="true">✨</span>
+                <span class="trophy-sparkle-2" aria-hidden="true">✨</span>
+                <svg viewBox="0 0 64 64" width="56" height="56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="goldCupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#FFF9D2" />
+                      <stop offset="25%" stop-color="#FCD34D" />
+                      <stop offset="65%" stop-color="#F59E0B" />
+                      <stop offset="100%" stop-color="#B45309" />
+                    </linearGradient>
+                    <linearGradient id="goldHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+                      <stop offset="100%" stop-color="#FDE68A" stop-opacity="0.15" />
+                    </linearGradient>
+                    <linearGradient id="goldBaseGrad" x1="0%" y1="0%" x2="100%" y2="50%">
+                      <stop offset="0%" stop-color="#D97706" />
+                      <stop offset="50%" stop-color="#F59E0B" />
+                      <stop offset="100%" stop-color="#92400E" />
+                    </linearGradient>
+                    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(180, 83, 9, 0.35)" />
+                    </filter>
+                  </defs>
+
+                  <!-- Handles -->
+                  <path d="M19 14 C10 14 8 28 20 31 C21 34 23 35 24 35" stroke="url(#goldCupGrad)" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                  <path d="M45 14 C54 14 56 28 44 31 C43 34 41 35 40 35" stroke="url(#goldCupGrad)" stroke-width="3.5" stroke-linecap="round" fill="none" />
+                  
+                  <!-- Cup Body -->
+                  <path d="M18 10 C18 10 19 36 32 38 C45 36 46 10 46 10 Z" fill="url(#goldCupGrad)" filter="url(#goldGlow)" />
+                  
+                  <!-- Cup Rim -->
+                  <ellipse cx="32" cy="10" rx="14" ry="3.5" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5" />
+                  
+                  <!-- Highlight Reflex on Left -->
+                  <path d="M22 13 C21 20 23 29 27 33 C25 29 24 20 25 13 Z" fill="url(#goldHighlight)" />
+                  
+                  <!-- Star on Cup -->
+                  <polygon points="32,18 33.8,22.6 38.5,22.8 34.8,25.6 36.1,30.2 32,27.5 27.9,30.2 29.2,25.6 25.5,22.8 30.2,22.6" fill="#FFFFFF" opacity="0.95" />
+                  
+                  <!-- Stem -->
+                  <path d="M28 38 L36 38 L35 46 L29 46 Z" fill="url(#goldBaseGrad)" />
+                  <ellipse cx="32" cy="46" rx="5" ry="1.5" fill="#FCD34D" />
+                  
+                  <!-- Base / Pedestal -->
+                  <path d="M24 47 L40 47 L43 54 L21 54 Z" fill="url(#goldBaseGrad)" />
+                  <rect x="18" y="54" width="28" height="4" rx="2" fill="#78350F" />
+                  <rect x="20" y="54" width="24" height="2" fill="#FDE68A" opacity="0.8" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="pill-badge pill-teal">¡FELICITACIONES!</div>
+            <h1 class="completed-title">¡DESAFÍO COMPLETADO!</h1>
+            <p class="completed-subtitle" id="completed-participant-subtitle">
+              Completaste los 5 días del Desafío de liderazgo.
+            </p>
+
+            <!-- 5 Completed Checks Grid -->
+            <div class="completed-days-grid">
+              <div class="day-check-card">
+                <div class="check-circle">✓</div>
+                <div class="day-check-info">
+                  <strong>Día 1</strong>
+                  <span>3 casos completados</span>
+                </div>
+              </div>
+              <div class="day-check-card">
+                <div class="check-circle">✓</div>
+                <div class="day-check-info">
+                  <strong>Día 2</strong>
+                  <span>3 casos completados</span>
+                </div>
+              </div>
+              <div class="day-check-card">
+                <div class="check-circle">✓</div>
+                <div class="day-check-info">
+                  <strong>Día 3</strong>
+                  <span>3 casos completados</span>
+                </div>
+              </div>
+              <div class="day-check-card">
+                <div class="check-circle">✓</div>
+                <div class="day-check-info">
+                  <strong>Día 4</strong>
+                  <span>3 casos completados</span>
+                </div>
+              </div>
+              <div class="day-check-card">
+                <div class="check-circle">✓</div>
+                <div class="day-check-info">
+                  <strong>Día 5</strong>
+                  <span>3 casos completados</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closing Statement from Word Document -->
+            <div class="final-closing-statement">
+              <div class="quote-mark">“</div>
+              <p class="final-quote-text">
+                No se trata de encontrar un liderazgo perfecto. Se trata de reconocer nuestro impacto, aprender de nuestras decisiones y elegir conscientemente qué queremos hacer diferente.
+              </p>
+              <span class="final-quote-author">— Medipiel · Desafío de Liderazgo</span>
+            </div>
+
+            <div class="completed-actions">
+              <button id="btn-view-all-reflections" class="btn btn-primary btn-lg">
+                <span>Ver Resumen de Mis Respuestas y Reflexiones</span>
+              </button>
+
+              <button id="btn-return-map-final" class="btn btn-secondary">
+                <span>Volver al Mapa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <span>MDP by Medipiel · Experiencia de Aprendizaje</span>
+        <div class="footer-links-row">
+          <button id="btn-footer-reset" class="btn-text-subtle">Reiniciar progreso</button>
+          <span class="footer-sep">•</span>
+          <button id="btn-open-admin-login" class="btn-text-subtle btn-admin-link">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Portal Admin</span>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CELEBRATION / UNLOCK NEXT DAY -->
+  <!-- ============================================== -->
+  <div id="celebration-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="celebration-title">
+    <div class="modal-dialog celebration-dialog animate-scale-up">
+      <div class="celebration-icon-animated">
+        <div class="celebration-sparkles">✨</div>
+        <div class="celebration-badge-circle">
+          <svg viewBox="0 0 24 24" width="44" height="44" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <h3 id="celebration-title" class="celebration-heading">¡Excelente! Has completado el Día 1</h3>
+      <p id="celebration-subtitle" class="celebration-desc">
+        Has desbloqueado el Día 2.
+      </p>
+
+      <div class="celebration-actions">
+        <button id="btn-celebration-continue" class="btn btn-primary btn-lg pulse-hover">
+          <span id="btn-celebration-continue-text">Continuar al Día Siguiente</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+        <button id="btn-celebration-map" class="btn btn-secondary">
+          <span>Ir al Mapa del Desafío</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: SUMMARY OF REFLECTIONS & DECISIONS -->
+  <!-- ============================================== -->
+  <div id="summary-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="summary-modal-title">
+    <div class="modal-dialog summary-dialog animate-scale-up">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <img src="logo.png" alt="Medipiel" class="modal-logo">
+          <div>
+            <h3 id="summary-modal-title" class="modal-title">Resumen del Desafío</h3>
+            <span id="summary-participant-name" class="modal-subtitle-name"></span>
+          </div>
+        </div>
+        <button id="btn-close-summary" class="btn-close-modal" aria-label="Cerrar modal">&times;</button>
+      </div>
+
+      <div class="modal-body custom-scroll" id="summary-modal-content">
+        <!-- Dynamically rendered summary of all 5 days -->
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-print-summary" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Imprimir / Guardar PDF</span>
+        </button>
+        <button id="btn-close-summary-footer" class="btn btn-primary">
+          <span>Cerrar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CONFIRM RESET PROGRESS -->
+  <!-- ============================================== -->
+  <div id="reset-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+    <div class="modal-dialog reset-dialog animate-scale-up">
+      <div class="reset-icon-wrap">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="#01606D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+
+      <h3 id="reset-modal-title" class="reset-heading">¿Reiniciar el progreso?</h3>
+      <p class="reset-desc">
+        Se borrarán las respuestas seleccionadas y las reflexiones del participante actual. Esta acción no se puede deshacer.
+      </p>
+
+      <div class="reset-actions">
+        <button id="btn-confirm-reset" class="btn btn-danger">
+          <span>Sí, reiniciar</span>
+        </button>
+        <button id="btn-cancel-reset" class="btn btn-secondary">
+          <span>Cancelar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADMIN LOGIN (Usuario y Contraseña) -->
+  <!-- ============================================== -->
+  <div id="admin-login-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-login-heading">
+    <div class="modal-dialog admin-login-dialog animate-scale-up">
+      <div class="admin-login-header">
+        <div class="admin-shield-icon">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <h3 id="admin-login-heading" class="admin-login-title">Acceso Portal Administrador</h3>
+        <p class="admin-login-sub">Ingresa tus credenciales autorizadas de Medipiel</p>
+      </div>
+
+      <form id="admin-login-form" class="admin-login-form">
+        <div class="form-group">
+          <label for="admin-username-input">Usuario:</label>
+          <input 
+            type="text" 
+            id="admin-username-input" 
+            class="admin-input" 
+            placeholder="Usuario (ej. saul.munera)" 
+            required 
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="admin-password-input">Contraseña:</label>
+          <input 
+            type="password" 
+            id="admin-password-input" 
+            class="admin-input" 
+            placeholder="Contraseña" 
+            required 
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div id="admin-login-error" class="admin-error-box hidden">
+          Usuario o contraseña incorrectos.
+        </div>
+
+        <div class="admin-login-actions">
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+            <span>Ingresar al Portal Admin</span>
+          </button>
+          <button type="button" id="btn-close-admin-login" class="btn btn-secondary" style="width: 100%;">
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

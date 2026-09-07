@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es" class="admin-html">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Administrador | Desafío de Liderazgo Medipiel</title>
+  <meta name="description" content="Portal Administrador para consultar y descargar respuestas y reflexiones del Desafío de Liderazgo de Medipiel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+  
+  <!-- AUTHENTICATION CHECK GATE -->
+  <div id="admin-auth-gate" class="admin-auth-screen">
+    <div class="admin-auth-card animate-scale-up">
+      <div class="admin-auth-header">
+        <img src="logo.png" alt="MDP by Medipiel" class="admin-auth-logo">
+        <div class="pill-badge pill-teal" style="margin-top: 14px; margin-bottom: 6px;">PORTAL ADMINISTRADOR</div>
+        <h2 class="admin-auth-title">Acceso Restringido</h2>
+        <p class="admin-auth-subtitle">Ingresa tus credenciales autorizadas de Medipiel</p>
+      </div>
+
+      <form id="standalone-login-form" style="width: 100%; text-align: left;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="gate-username" class="admin-form-label">Usuario:</label>
+          <input type="text" id="gate-username" class="admin-input" placeholder="Usuario (ej. saul.munera)" required autocomplete="username">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="gate-password" class="admin-form-label">Contraseña:</label>
+          <input type="password" id="gate-password" class="admin-input" placeholder="Contraseña" required autocomplete="current-password">
+        </div>
+        <div id="gate-error-msg" class="admin-error-box hidden" style="margin-bottom: 18px;">
+          Usuario o contraseña incorrectos.
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+          <span>Ingresar al Portal</span>
+        </button>
+        <div style="text-align: center; margin-top: 18px;">
+          <a href="index.html" class="btn-link btn-link-muted">← Volver a la App del Desafío</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN PORTAL MAIN APP (Shown after authentication) -->
+  <div id="admin-dashboard" class="admin-dashboard-layout hidden">
+    <!-- ADMIN HEADER -->
+    <header class="admin-top-nav">
+      <div class="admin-nav-inner">
+        <div class="admin-nav-left">
+          <img src="logo.png" alt="Medipiel" class="admin-header-logo">
+          <div class="admin-header-titles">
+            <span class="admin-tag">PORTAL ADMIN</span>
+            <h1 class="admin-title">Desafío de Liderazgo</h1>
+          </div>
+        </div>
+
+        <div class="admin-nav-right">
+          <div class="admin-user-pill">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="logged-admin-name">Saúl Múnera</span>
+          </div>
+
+          <a href="index.html" class="btn btn-secondary btn-icon" title="Abrir la app del Desafío">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            <span>Ver Desafío</span>
+          </a>
+
+          <button id="btn-admin-logout" class="btn btn-icon" style="background: #FEE2E2; color: #991B1B;" title="Cerrar sesión admin">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Salir</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ADMIN MAIN CONTAINER -->
+    <main class="admin-main-content">
+      
+      <!-- METRICS DASHBOARD -->
+      <section class="admin-metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon-wrap" style="background: var(--turquoise-light); color: var(--petrol);">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <span class="metric-label">Total Participantes</span>
+            <strong class="metric-value" id="metric-total-users">0</strong>
+            <span class="metric-hint">Registrados en la plataforma</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap" style="background: #D1FAE5; color: #065F46;">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <span class="metric-label">Desafíos Completados</span>
+            <strong class="metric-value" id="metric-completed-users">0</strong>
+            <span class="metric-hint">5 de 5 días terminados</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap" style="background: var(--turquoise-soft); color: var(--petrol);">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <span class="metric-label">En Progreso</span>
+            <strong class="metric-value" id="metric-in-progress-users">0</strong>
+            <span class="metric-hint">Días 1 a 4</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon-wrap" style="background: #FEF3C7; color: #92400E;">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <span class="metric-label">Tasa de Finalización</span>
+            <strong class="metric-value" id="metric-completion-rate">0%</strong>
+            <span class="metric-hint">Efectividad global</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTION TOOLBAR & EXPORTS -->
+      <section class="admin-toolbar-card">
+        <div class="toolbar-left">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              id="admin-search-input" 
+              placeholder="Buscar participante por nombre..." 
+              class="search-input"
+            />
+          </div>
+
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">Todos (<span id="count-filter-all">0</span>)</button>
+            <button class="filter-btn" data-filter="completed">Completados (<span id="count-filter-completed">0</span>)</button>
+            <button class="filter-btn" data-filter="progress">En Progreso (<span id="count-filter-progress">0</span>)</button>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <!-- MAIN EXCEL / CSV DOWNLOAD BUTTON -->
+          <button id="btn-export-excel-csv" class="btn btn-primary" title="Descargar todas las respuestas en formato Excel CSV">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Descargar Reporte Excel / CSV</span>
+          </button>
+
+          <!-- JSON BACKUP DOWNLOAD BUTTON -->
+          <button id="btn-export-json" class="btn btn-secondary" title="Descargar copia de seguridad en JSON">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <span>Descargar JSON</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- PARTICIPANTS TABLE -->
+      <section class="admin-table-card">
+        <div class="table-responsive">
+          <table class="admin-table" id="participants-table">
+            <thead>
+              <tr>
+                <th>Nombre del Participante</th>
+                <th>Fecha de Registro</th>
+                <th>Última Actividad</th>
+                <th>Progreso</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="participants-table-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="table-empty-state" class="table-empty-state hidden">
+          <svg viewBox="0 0 24 24" width="48" height="48" stroke="#CBD5E0" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+          </svg>
+          <p class="empty-title">No se encontraron participantes</p>
+          <p class="empty-sub">Los participantes aparecerán automáticamente en cuanto ingresen su nombre e inicien el desafío.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-content">
+        <span>MDP by Medipiel · Portal Administrador</span>
+        <span>Versión 1.0</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: DETAILED RESPONSES PER PARTICIPANT -->
+  <!-- ============================================== -->
+  <div id="participant-detail-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="detail-participant-name">
+    <div class="modal-dialog summary-dialog animate-scale-up" style="max-width: 900px;">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <img src="logo.png" alt="Medipiel" class="modal-logo">
+          <div>
+            <h3 id="detail-participant-name" class="modal-title">Detalle de Respuestas</h3>
+            <span id="detail-participant-meta" class="modal-subtitle-name"></span>
+          </div>
+        </div>
+        <button id="btn-close-detail" class="btn-close-modal" aria-label="Cerrar modal">&times;</button>
+      </div>
+
+      <div class="modal-body custom-scroll" id="detail-modal-body">
+        <!-- Dynamically rendered 15 cases and 5 reflections for this participant -->
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-print-participant-detail" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Imprimir / Guardar Ficha PDF</span>
+        </button>
+        <button id="btn-close-detail-footer" class="btn btn-primary">
+          <span>Cerrar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CONFIRM DELETE PARTICIPANT -->
+  <!-- ============================================== -->
+  <div id="delete-confirm-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-dialog reset-dialog animate-scale-up">
+      <div class="reset-icon-wrap">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="#E53E3E" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+      </div>
+      <h3 class="reset-heading">¿Eliminar participante?</h3>
+      <p class="reset-desc" id="delete-participant-msg">
+        Se eliminarán permanentemente todas las respuestas y reflexiones de este participante.
+      </p>
+      <div class="reset-actions">
+        <button id="btn-confirm-delete" class="btn btn-danger">
+          <span>Sí, eliminar</span>
+        </button>
+        <button id="btn-cancel-delete" class="btn btn-secondary">
+          <span>Cancelar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
