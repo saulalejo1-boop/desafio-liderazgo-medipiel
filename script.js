@@ -283,7 +283,64 @@ const state = {
   reflections: {}, // { "1": "Texto...", ... }
 };
 
-function saveState() {
+let cloudSyncTimeout = null;
+
+function updateCloudSyncUI(status, message) {
+  const pill = document.getElementById("header-cloud-status");
+  if (!pill) return;
+
+  if (status === "syncing") {
+    pill.className = "header-cloud-pill syncing";
+    pill.innerHTML = `<span class="cloud-status-icon">🔄</span><span class="cloud-status-text">${message || "Guardando..."}</span>`;
+  } else if (status === "synced") {
+    pill.className = "header-cloud-pill synced";
+    pill.innerHTML = `<span class="cloud-status-icon">☁️✓</span><span class="cloud-status-text">${message || "En la nube"}</span>`;
+  } else {
+    pill.className = "header-cloud-pill local-only";
+    pill.innerHTML = `<span class="cloud-status-icon">💾</span><span class="cloud-status-text">${message || "Guardado"}</span>`;
+  }
+}
+
+function scheduleCloudSync(participantData, immediate = false) {
+  if (!window.GOOGLE_SHEETS_CONFIG || !window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    updateCloudSyncUI("local", "Guardado");
+    return;
+  }
+
+  if (!participantData || !participantData.fullName) return;
+
+  if (cloudSyncTimeout) {
+    clearTimeout(cloudSyncTimeout);
+    cloudSyncTimeout = null;
+  }
+
+  if (immediate) {
+    performCloudSync(participantData);
+  } else {
+    updateCloudSyncUI("syncing", "Guardando...");
+    cloudSyncTimeout = setTimeout(() => {
+      performCloudSync(participantData);
+    }, 1200);
+  }
+}
+
+async function performCloudSync(participantData) {
+  if (!window.GOOGLE_SHEETS_CONFIG || !window.GOOGLE_SHEETS_CONFIG.isConfigured()) return;
+  updateCloudSyncUI("syncing", "Guardando...");
+  try {
+    const res = await window.GOOGLE_SHEETS_CONFIG.syncParticipant(participantData);
+    if (res && res.success) {
+      updateCloudSyncUI("synced", "En la nube");
+    } else {
+      updateCloudSyncUI("local", "Guardado");
+    }
+  } catch (err) {
+    console.warn("Aviso: Sincronización en segundo plano con Google Sheets:", err);
+    updateCloudSyncUI("local", "Guardado");
+  }
+}
+
+function saveState(immediateSync = false) {
   try {
     const participantData = {
       id: state.participantId,
@@ -317,6 +374,9 @@ function saveState() {
       }
 
       localStorage.setItem(PARTICIPANTS_REGISTRY_KEY, JSON.stringify(registry));
+
+      // Sincronizar con Google Sheets en la nube
+      scheduleCloudSync(participantData, immediateSync);
     }
   } catch (e) {
     console.error("Error guardando progreso:", e);
@@ -566,6 +626,12 @@ function updateHeaderProgress() {
   dom.headerDayLabel.textContent = `Día ${state.activeDay} de 5`;
   dom.headerProgressPercent.textContent = `${percent}%`;
   dom.headerProgressFill.style.width = `${percent}%`;
+
+  if (window.GOOGLE_SHEETS_CONFIG && window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    updateCloudSyncUI("synced", "En la nube");
+  } else {
+    updateCloudSyncUI("local", "Guardado");
+  }
 }
 
 // =========================================================================
@@ -602,7 +668,7 @@ function handleStartChallengeClick() {
       state.participantId = `part_${Date.now()}`;
       state.startedAt = new Date().toISOString();
     }
-    saveState();
+    saveState(true);
   }
 
   // Smooth exit transition
@@ -925,7 +991,7 @@ function handleCompleteDay() {
     state.unlockedDay = nextDay;
   }
 
-  saveState();
+  saveState(true);
   updateHeaderProgress();
   showCelebrationModal(state.activeDay);
 }

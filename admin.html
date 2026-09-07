@@ -66,6 +66,23 @@
             <span id="logged-admin-name">Saúl Múnera</span>
           </div>
 
+          <button id="btn-sync-sheets" class="btn btn-secondary btn-icon" title="Sincronizar datos con Google Sheets">
+            <svg id="sync-icon-svg" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span id="sync-btn-text">Sincronizar</span>
+          </button>
+
+          <button id="btn-open-sheets-config" class="btn btn-secondary btn-icon" title="Configurar conexión con Google Sheets">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Google Sheets</span>
+          </button>
+
           <a href="index.html" class="btn btn-secondary btn-icon" title="Abrir la app del Desafío">
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -301,6 +318,66 @@
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- MODAL: GOOGLE SHEETS CONFIGURATION -->
+  <!-- ============================================== -->
+  <div id="sheets-config-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sheets-modal-title">
+    <div class="modal-dialog admin-login-dialog animate-scale-up" style="max-width: 560px;">
+      <div class="admin-login-header">
+        <div class="admin-shield-icon" style="background: rgba(1, 96, 109, 0.12); color: var(--petrol);">
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="8" y1="13" x2="16" y2="13"></line>
+            <line x1="8" y1="17" x2="16" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <h3 id="sheets-modal-title" class="admin-login-title">Conexión con Google Sheets</h3>
+        <p class="admin-login-sub">Recibe en tiempo real las respuestas de todos los líderes de Medipiel en tu Hoja de Cálculo</p>
+      </div>
+
+      <div style="padding: 10px 0 10px 0;">
+        <div id="sheets-status-banner" class="sheets-status-box" style="margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #F3F4F6; border: 1px solid #E5E7EB;">
+          <span id="sheets-status-text" style="font-weight: 600; color: #374151;">Estado: No configurado</span>
+          <span id="sheets-status-badge" style="background: #E5E7EB; color: #4B5563; font-weight: 700; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem;">Desconectado</span>
+        </div>
+
+        <div class="form-group" style="text-align: left; margin-bottom: 14px;">
+          <label for="input-sheets-url" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #374151;">URL de la Aplicación Web (Google Apps Script):</label>
+          <input 
+            type="url" 
+            id="input-sheets-url" 
+            class="admin-input" 
+            placeholder="https://script.google.com/macros/s/.../exec"
+            style="font-family: monospace; font-size: 0.85rem;"
+          />
+          <span style="display: block; margin-top: 6px; font-size: 0.82rem; color: #6B7280; line-height: 1.4;">
+            Pega aquí la URL generada al implementar el script en tu Google Sheets (consulta el archivo <code>GUIA_CONEXION_GOOGLE_SHEETS.md</code>).
+          </span>
+        </div>
+
+        <div id="sheets-test-feedback" class="admin-error-box hidden" style="margin-bottom: 14px; text-align: left;"></div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" id="btn-test-sheets-url" class="btn btn-secondary" style="flex: 1;">
+            <span>Probar Conexión</span>
+          </button>
+          <button type="button" id="btn-save-sheets-url" class="btn btn-primary" style="flex: 1;">
+            <span>Guardar URL</span>
+          </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 14px; border-top: 1px solid #E5E7EB; padding-top: 14px;">
+          <button type="button" id="btn-close-sheets-modal" class="btn btn-secondary" style="width: 100%;">
+            <span>Cerrar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="google_sheets_config.js"></script>
   <script src="script.js"></script>
   <script src="admin.js"></script>
 </body>

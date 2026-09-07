@@ -448,6 +448,45 @@ p {
   line-height: 1.2;
 }
 
+.header-cloud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(1, 96, 109, 0.08);
+  color: var(--petrol);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.header-cloud-pill.syncing {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.header-cloud-pill.syncing .cloud-status-icon {
+  display: inline-block;
+  animation: cloud-spin 1.5s linear infinite;
+}
+
+.header-cloud-pill.synced {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.header-cloud-pill.local-only {
+  background: #F3F4F6;
+  color: #4B5563;
+}
+
+@keyframes cloud-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -4187,3 +4226,18 @@ p {
     white-space: pre-wrap !important;
   }
 }
+
+/* Google Sheets Sync Animations & UI */
+.spin-rotate {
+  animation: spin-kf 1s linear infinite;
+}
+
+@keyframes spin-kf {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.sheets-status-box {
+  transition: var(--transition-fast);
+}
+

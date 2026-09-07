@@ -63,7 +63,22 @@ const adminDom = {
   deleteModal: document.getElementById("delete-confirm-modal"),
   deleteMsg: document.getElementById("delete-participant-msg"),
   btnConfirmDelete: document.getElementById("btn-confirm-delete"),
-  btnCancelDelete: document.getElementById("btn-cancel-delete")
+  btnCancelDelete: document.getElementById("btn-cancel-delete"),
+
+  // Google Sheets integration
+  btnSyncSheets: document.getElementById("btn-sync-sheets"),
+  syncIconSvg: document.getElementById("sync-icon-svg"),
+  syncBtnText: document.getElementById("sync-btn-text"),
+  btnOpenSheetsConfig: document.getElementById("btn-open-sheets-config"),
+  sheetsModal: document.getElementById("sheets-config-modal"),
+  inputSheetsUrl: document.getElementById("input-sheets-url"),
+  sheetsStatusBanner: document.getElementById("sheets-status-banner"),
+  sheetsStatusText: document.getElementById("sheets-status-text"),
+  sheetsStatusBadge: document.getElementById("sheets-status-badge"),
+  sheetsTestFeedback: document.getElementById("sheets-test-feedback"),
+  btnTestSheetsUrl: document.getElementById("btn-test-sheets-url"),
+  btnSaveSheetsUrl: document.getElementById("btn-save-sheets-url"),
+  btnCloseSheetsModal: document.getElementById("btn-close-sheets-modal")
 };
 
 // =========================================================================
@@ -111,8 +126,10 @@ function handleAdminLogout() {
 }
 
 // =========================================================================
-// 2. DATA LOADING & METRICS
+// 2. DATA LOADING & METRICS (CON SOPORTE GOOGLE SHEETS)
 // =========================================================================
+let isSyncingSheets = false;
+
 function loadParticipantsData() {
   try {
     const raw = localStorage.getItem(PARTICIPANTS_STORAGE_KEY);
@@ -146,15 +163,164 @@ function loadParticipantsData() {
       }
     }
   } catch (e) {
-    console.error("Error cargando participantes:", e);
+    console.error("Error cargando participantes locales:", e);
     allParticipants = [];
   }
 }
 
-function loadAndRenderDashboard() {
+function loadAndRenderDashboard(fetchRemote = true) {
   loadParticipantsData();
   renderMetrics();
   renderTable();
+
+  // Si Google Sheets está configurado, sincronizar automáticamente en segundo plano
+  if (fetchRemote && window.GOOGLE_SHEETS_CONFIG && window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    syncWithGoogleSheets(false);
+  }
+}
+
+async function syncWithGoogleSheets(isManual = false) {
+  if (isSyncingSheets) return;
+
+  if (!window.GOOGLE_SHEETS_CONFIG || !window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    if (isManual) {
+      openSheetsConfigModal();
+    }
+    return;
+  }
+
+  isSyncingSheets = true;
+  if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = "Sincronizando...";
+  if (adminDom.syncIconSvg) adminDom.syncIconSvg.classList.add("spin-rotate");
+
+  try {
+    const remoteParticipants = await window.GOOGLE_SHEETS_CONFIG.fetchParticipants();
+    if (Array.isArray(remoteParticipants) && remoteParticipants.length > 0) {
+      remoteParticipants.forEach(remoteP => {
+        const idx = allParticipants.findIndex(p => p.id === remoteP.id || p.fullName.toLowerCase() === remoteP.fullName.toLowerCase());
+        if (idx >= 0) {
+          allParticipants[idx] = { ...allParticipants[idx], ...remoteP };
+        } else {
+          allParticipants.push(remoteP);
+        }
+      });
+
+      localStorage.setItem(PARTICIPANTS_STORAGE_KEY, JSON.stringify(allParticipants));
+      renderMetrics();
+      renderTable();
+
+      if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = `✓ Al día (${allParticipants.length})`;
+      setTimeout(() => {
+        if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = "Sincronizar";
+      }, 2500);
+    } else {
+      if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = "✓ Conectado";
+      setTimeout(() => {
+        if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = "Sincronizar";
+      }, 2000);
+    }
+  } catch (err) {
+    console.warn("Aviso consultando Google Sheets:", err);
+    if (isManual && adminDom.syncBtnText) {
+      adminDom.syncBtnText.textContent = "Aviso red";
+      setTimeout(() => {
+        if (adminDom.syncBtnText) adminDom.syncBtnText.textContent = "Sincronizar";
+      }, 2500);
+    }
+  } finally {
+    isSyncingSheets = false;
+    if (adminDom.syncIconSvg) adminDom.syncIconSvg.classList.remove("spin-rotate");
+  }
+}
+
+function updateSheetsConfigModalUI() {
+  if (!adminDom.sheetsModal) return;
+  const url = window.GOOGLE_SHEETS_CONFIG ? window.GOOGLE_SHEETS_CONFIG.getUrl() : "";
+  adminDom.inputSheetsUrl.value = url;
+
+  if (url) {
+    adminDom.sheetsStatusText.textContent = "Estado: Conectado a Google Sheets";
+    adminDom.sheetsStatusBadge.textContent = "Conectado";
+    adminDom.sheetsStatusBadge.style.background = "#DCFCE7";
+    adminDom.sheetsStatusBadge.style.color = "#166534";
+  } else {
+    adminDom.sheetsStatusText.textContent = "Estado: No configurado";
+    adminDom.sheetsStatusBadge.textContent = "Desconectado";
+    adminDom.sheetsStatusBadge.style.background = "#E5E7EB";
+    adminDom.sheetsStatusBadge.style.color = "#4B5563";
+  }
+
+  adminDom.sheetsTestFeedback.classList.add("hidden");
+  adminDom.sheetsTestFeedback.textContent = "";
+}
+
+function openSheetsConfigModal() {
+  updateSheetsConfigModalUI();
+  adminDom.sheetsModal.classList.remove("hidden");
+}
+
+function closeSheetsConfigModal() {
+  adminDom.sheetsModal.classList.add("hidden");
+}
+
+async function handleTestSheetsUrl() {
+  const url = adminDom.inputSheetsUrl.value.trim();
+  if (!url) {
+    adminDom.sheetsTestFeedback.className = "admin-error-box";
+    adminDom.sheetsTestFeedback.style.background = "#FEF2F2";
+    adminDom.sheetsTestFeedback.style.color = "#B91C1C";
+    adminDom.sheetsTestFeedback.style.borderColor = "#FECACA";
+    adminDom.sheetsTestFeedback.textContent = "Por favor ingresa la URL de la Web App generada en Apps Script.";
+    adminDom.sheetsTestFeedback.classList.remove("hidden");
+    return;
+  }
+
+  adminDom.btnTestSheetsUrl.setAttribute("disabled", "true");
+  adminDom.sheetsTestFeedback.className = "admin-error-box";
+  adminDom.sheetsTestFeedback.style.background = "#EFF6FF";
+  adminDom.sheetsTestFeedback.style.color = "#1D4ED8";
+  adminDom.sheetsTestFeedback.style.borderColor = "#BFDBFE";
+  adminDom.sheetsTestFeedback.textContent = "Probando conexión con Google Sheets...";
+  adminDom.sheetsTestFeedback.classList.remove("hidden");
+
+  try {
+    const res = await window.GOOGLE_SHEETS_CONFIG.testConnection(url);
+    adminDom.sheetsTestFeedback.style.background = "#ECFDF5";
+    adminDom.sheetsTestFeedback.style.color = "#047857";
+    adminDom.sheetsTestFeedback.style.borderColor = "#A7F3D0";
+    adminDom.sheetsTestFeedback.textContent = `✓ ${res.message || "Conexión exitosa con la hoja de cálculo de Google Sheets."}`;
+  } catch (err) {
+    adminDom.sheetsTestFeedback.style.background = "#FEF2F2";
+    adminDom.sheetsTestFeedback.style.color = "#B91C1C";
+    adminDom.sheetsTestFeedback.style.borderColor = "#FECACA";
+    adminDom.sheetsTestFeedback.textContent = `Error: ${err.message}. Asegúrate de haber implementado la Web App con acceso 'Cualquier usuario' (Anyone).`;
+  } finally {
+    adminDom.btnTestSheetsUrl.removeAttribute("disabled");
+  }
+}
+
+async function handleSaveSheetsUrl() {
+  const url = adminDom.inputSheetsUrl.value.trim();
+  const saved = window.GOOGLE_SHEETS_CONFIG.setUrl(url);
+  updateSheetsConfigModalUI();
+
+  if (saved) {
+    adminDom.sheetsTestFeedback.style.background = "#ECFDF5";
+    adminDom.sheetsTestFeedback.style.color = "#047857";
+    adminDom.sheetsTestFeedback.style.borderColor = "#A7F3D0";
+    adminDom.sheetsTestFeedback.textContent = "✓ URL guardada correctamente. Sincronizando datos...";
+    adminDom.sheetsTestFeedback.classList.remove("hidden");
+    await syncWithGoogleSheets(false);
+    setTimeout(() => {
+      closeSheetsConfigModal();
+    }, 1200);
+  } else {
+    adminDom.sheetsTestFeedback.style.background = "#FEF2F2";
+    adminDom.sheetsTestFeedback.style.color = "#B91C1C";
+    adminDom.sheetsTestFeedback.style.borderColor = "#FECACA";
+    adminDom.sheetsTestFeedback.textContent = "Se ha desconectado la URL de Google Sheets.";
+    adminDom.sheetsTestFeedback.classList.remove("hidden");
+  }
 }
 
 function renderMetrics() {
@@ -552,8 +718,26 @@ function initAdminEvents() {
   adminDom.btnCancelDelete.addEventListener("click", () => adminDom.deleteModal.classList.add("hidden"));
   adminDom.btnConfirmDelete.addEventListener("click", confirmDeleteParticipant);
 
+  // Google Sheets Events
+  if (adminDom.btnSyncSheets) {
+    adminDom.btnSyncSheets.addEventListener("click", () => syncWithGoogleSheets(true));
+  }
+  if (adminDom.btnOpenSheetsConfig) {
+    adminDom.btnOpenSheetsConfig.addEventListener("click", openSheetsConfigModal);
+  }
+  if (adminDom.btnCloseSheetsModal) {
+    adminDom.btnCloseSheetsModal.addEventListener("click", closeSheetsConfigModal);
+  }
+  if (adminDom.btnTestSheetsUrl) {
+    adminDom.btnTestSheetsUrl.addEventListener("click", handleTestSheetsUrl);
+  }
+  if (adminDom.btnSaveSheetsUrl) {
+    adminDom.btnSaveSheetsUrl.addEventListener("click", handleSaveSheetsUrl);
+  }
+
   // Close modals on clicking overlay backdrop
-  [adminDom.detailModal, adminDom.deleteModal].forEach(modal => {
+  [adminDom.detailModal, adminDom.deleteModal, adminDom.sheetsModal].forEach(modal => {
+    if (!modal) return;
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.classList.add("hidden");
     });
