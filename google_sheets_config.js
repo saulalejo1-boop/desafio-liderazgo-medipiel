@@ -10,7 +10,7 @@
 window.GOOGLE_SHEETS_CONFIG = {
   // Puedes pegar aquí la URL de tu Web App de Google Apps Script (termina en /exec)
   // O bien configurarla directamente desde el Portal Administrador sin tocar código.
-  DEFAULT_SCRIPT_URL: "",
+  DEFAULT_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzQEYmmHsDzmtHE2eGQ97L2s2qymV2puhtGVAULVwFDlwzwX1wJmmFjuApgXmxEhqM/exec",
 
   STORAGE_KEY: "medipiel_google_sheets_script_url",
 
