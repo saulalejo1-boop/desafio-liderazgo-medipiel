@@ -92,6 +92,29 @@ window.GOOGLE_SHEETS_CONFIG = {
   },
 
   /**
+   * Elimina un participante en Google Sheets de forma permanente.
+   */
+  deleteParticipant: async function(id, fullName) {
+    const url = this.getUrl();
+    if (!url) {
+      return { success: false, reason: "not_configured" };
+    }
+
+    try {
+      const deleteUrl = url + (url.includes("?") ? "&" : "?") +
+        "action=delete_participant&id=" + encodeURIComponent(id || "") +
+        "&fullName=" + encodeURIComponent(fullName || "") +
+        "&_t=" + Date.now();
+
+      await fetch(deleteUrl, { method: "GET", mode: "no-cors" });
+      return { success: true };
+    } catch (error) {
+      console.warn("Aviso al eliminar participante de Google Sheets:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  /**
    * Consulta todos los participantes guardados en Google Sheets.
    */
   fetchParticipants: async function() {

@@ -99,7 +99,7 @@ function setupSheet() {
 }
 
 /**
- * Maneja peticiones HTTP POST (Guardar/Sincronizar participante)
+ * Maneja peticiones HTTP POST (Guardar/Sincronizar participante o Eliminar)
  */
 function doPost(e) {
   try {
@@ -110,6 +110,16 @@ function doPost(e) {
       payload = JSON.parse(e.parameter.data);
     } else {
       payload = e.parameter || {};
+    }
+
+    // Acción para eliminar participante desde el portal administrador
+    if (payload.action === "delete_participant") {
+      const result = deleteParticipantRecord(payload);
+      return createJsonResponse({
+        status: "success",
+        message: "Participante eliminado correctamente de Google Sheets",
+        data: result
+      });
     }
 
     const result = saveParticipantRecord(payload);
@@ -127,7 +137,7 @@ function doPost(e) {
 }
 
 /**
- * Maneja peticiones HTTP GET (Consulta desde el Portal Admin o Ping de prueba)
+ * Maneja peticiones HTTP GET (Consulta desde el Portal Admin, Ping de prueba o Eliminar)
  */
 function doGet(e) {
   try {
@@ -139,6 +149,19 @@ function doGet(e) {
         status: "success",
         message: "Conexión exitosa con Google Sheets de Medipiel",
         timestamp: new Date().toISOString()
+      });
+    }
+
+    // Eliminar participante vía GET (soporte directo sin bloqueos CORS)
+    if (action === "delete_participant") {
+      const result = deleteParticipantRecord({
+        id: e.parameter.id,
+        fullName: e.parameter.fullName || e.parameter.name
+      });
+      return createJsonResponse({
+        status: "success",
+        message: "Participante eliminado correctamente de Google Sheets",
+        data: result
       });
     }
 
@@ -155,6 +178,48 @@ function doGet(e) {
       message: err.toString()
     });
   }
+}
+
+/**
+ * Elimina las filas asociadas a un participante en la hoja de cálculo.
+ */
+function deleteParticipantRecord(data) {
+  const sheet = getOrCreateSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return { deleted: false, count: 0 };
+
+  let targetId = "";
+  let targetName = "";
+  if (typeof data === "object" && data !== null) {
+    targetId = String(data.id || "").trim();
+    targetName = String(data.fullName || data.name || "").trim().toLowerCase();
+  } else if (typeof data === "string") {
+    targetId = data.trim();
+  }
+
+  const existingData = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+  let deletedCount = 0;
+
+  // Recorrer de abajo hacia arriba para mantener los números de fila estables
+  for (let r = existingData.length - 1; r >= 0; r--) {
+    const rowId = String(existingData[r][0]).trim();
+    const rowName = String(existingData[r][1]).trim().toLowerCase();
+
+    const matchesId = targetId && (rowId === targetId || rowId.includes(targetId) || targetId.includes(rowId));
+    const matchesName = targetName && (rowName === targetName);
+
+    if (matchesId || matchesName) {
+      sheet.deleteRow(r + 2);
+      deletedCount++;
+    }
+  }
+
+  return {
+    deleted: deletedCount > 0,
+    count: deletedCount,
+    id: targetId,
+    name: targetName
+  };
 }
 
 /**

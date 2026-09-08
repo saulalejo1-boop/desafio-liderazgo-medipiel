@@ -28,6 +28,36 @@ function normalizeName(str) {
     .trim();
 }
 
+// Registro persistente de participantes eliminados por el Administrador
+const DELETED_REGISTRY_KEY = "medipiel_deleted_participants_registry";
+
+function getDeletedRegistry() {
+  try {
+    const raw = localStorage.getItem(DELETED_REGISTRY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function recordDeletedParticipant(id, fullName) {
+  try {
+    const list = getDeletedRegistry();
+    list.push({
+      id: id || "",
+      normalizedName: normalizeName(fullName),
+      deletedAt: Date.now()
+    });
+    localStorage.setItem(DELETED_REGISTRY_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+
+function isParticipantDeleted(id, fullName) {
+  const list = getDeletedRegistry();
+  const normName = normalizeName(fullName);
+  return list.some(d => (id && d.id && d.id === id) || (normName && d.normalizedName && d.normalizedName === normName));
+}
+
 let allParticipants = [];
 let currentFilter = "all"; // all | completed | progress
 let searchQuery = "";
@@ -146,16 +176,16 @@ function loadParticipantsData() {
   try {
     const raw = localStorage.getItem(PARTICIPANTS_STORAGE_KEY);
     if (raw) {
-      allParticipants = JSON.parse(raw);
+      allParticipants = JSON.parse(raw).filter(p => !isParticipantDeleted(p.id, p.fullName));
     } else {
       allParticipants = [];
     }
 
-    // Also check if there's a standalone session from script.js to sync
+    // Also check if there's a standalone session from script.js to sync (ignoring deleted)
     const activeRaw = localStorage.getItem("medipiel_desafio_liderazgo_v1");
     if (activeRaw) {
       const activeData = JSON.parse(activeRaw);
-      if (activeData.fullName) {
+      if (activeData.fullName && !isParticipantDeleted(activeData.id, activeData.fullName)) {
         const existingIdx = allParticipants.findIndex(
           p => (p.id && activeData.id && p.id === activeData.id) ||
                (normalizeName(p.fullName) === normalizeName(activeData.fullName))
@@ -210,18 +240,13 @@ async function syncWithGoogleSheets(isManual = false) {
 
   try {
     const remoteParticipants = await window.GOOGLE_SHEETS_CONFIG.fetchParticipants();
-    if (Array.isArray(remoteParticipants) && remoteParticipants.length > 0) {
-      remoteParticipants.forEach(remoteP => {
-        const idx = allParticipants.findIndex(
-          p => (p.id && remoteP.id && p.id === remoteP.id) ||
-               (normalizeName(p.fullName) === normalizeName(remoteP.fullName))
-        );
-        if (idx >= 0) {
-          allParticipants[idx] = { ...allParticipants[idx], ...remoteP };
-        } else {
-          allParticipants.push(remoteP);
-        }
-      });
+    if (Array.isArray(remoteParticipants)) {
+      // Filtrar aquellos que el administrador haya marcado como eliminados
+      const validRemote = remoteParticipants.filter(p => !isParticipantDeleted(p.id, p.fullName));
+
+      // Si Google Sheets está conectado, su listado es la fuente central de la verdad.
+      // Si el administrador eliminó filas directamente en Google Sheets, ya no aparecerán aquí.
+      allParticipants = validRemote;
 
       localStorage.setItem(PARTICIPANTS_STORAGE_KEY, JSON.stringify(allParticipants));
       renderMetrics();
@@ -689,15 +714,47 @@ function openDeleteModal(id, name) {
   adminDom.deleteModal.classList.remove("hidden");
 }
 
-function confirmDeleteParticipant() {
+async function confirmDeleteParticipant() {
   if (!participantToDeleteId) return;
 
-  allParticipants = allParticipants.filter(p => p.id !== participantToDeleteId);
+  const targetId = participantToDeleteId;
+  const targetP = allParticipants.find(p => p.id === targetId);
+  const targetName = targetP ? targetP.fullName : "";
+
+  // 1. Registrar en la lista de eliminados para que no vuelva a recargarse nunca
+  recordDeletedParticipant(targetId, targetName);
+
+  // 2. Eliminar de la lista local
+  allParticipants = allParticipants.filter(
+    p => p.id !== targetId && (!targetName || normalizeName(p.fullName) !== normalizeName(targetName))
+  );
   localStorage.setItem(PARTICIPANTS_STORAGE_KEY, JSON.stringify(allParticipants));
 
+  // 3. Limpiar sesión activa si coincide con el usuario eliminado
+  try {
+    const activeRaw = localStorage.getItem("medipiel_desafio_liderazgo_v1");
+    if (activeRaw) {
+      const activeData = JSON.parse(activeRaw);
+      if (activeData.id === targetId || (targetName && normalizeName(activeData.fullName) === normalizeName(targetName))) {
+        localStorage.removeItem("medipiel_desafio_liderazgo_v1");
+      }
+    }
+  } catch (e) {}
+
+  // 4. Cerrar modal y refrescar la tabla de inmediato
   adminDom.deleteModal.classList.add("hidden");
   participantToDeleteId = null;
-  loadAndRenderDashboard();
+  renderMetrics();
+  renderTable();
+
+  // 5. Enviar orden a Google Sheets para que elimine permanentemente la fila en la nube
+  if (window.GOOGLE_SHEETS_CONFIG && window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    try {
+      await window.GOOGLE_SHEETS_CONFIG.deleteParticipant(targetId, targetName);
+    } catch (err) {
+      console.warn("Aviso al solicitar eliminación en Google Sheets:", err);
+    }
+  }
 }
 
 // =========================================================================
