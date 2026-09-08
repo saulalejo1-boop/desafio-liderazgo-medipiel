@@ -787,7 +787,15 @@ function initAdminEvents() {
   // Detail Modal
   adminDom.btnCloseDetail.addEventListener("click", () => adminDom.detailModal.classList.add("hidden"));
   adminDom.btnCloseDetailFooter.addEventListener("click", () => adminDom.detailModal.classList.add("hidden"));
-  adminDom.btnPrintDetail.addEventListener("click", () => window.print());
+  adminDom.btnPrintDetail.addEventListener("click", () => {
+    const originalTitle = document.title;
+    const participantName = adminDom.detailName ? adminDom.detailName.textContent.trim() : "Participante";
+    document.title = `Ficha_${participantName.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_')}_Desafio_Liderazgo`;
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  });
 
   // Delete Modal
   adminDom.btnCancelDelete.addEventListener("click", () => adminDom.deleteModal.classList.add("hidden"));
