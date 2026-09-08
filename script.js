@@ -635,8 +635,37 @@ function updateHeaderProgress() {
 }
 
 // =========================================================================
-// 5. USER REGISTRATION & START
-// =========================================================================
+function findSavedParticipantByName(name) {
+  if (!name || typeof name !== "string") return null;
+  const clean = name.trim().toLowerCase();
+  if (clean.length < 3) return null;
+
+  try {
+    const rawReg = localStorage.getItem(PARTICIPANTS_REGISTRY_KEY);
+    if (rawReg) {
+      const registry = JSON.parse(rawReg);
+      const found = registry.find(p => p.fullName && p.fullName.trim().toLowerCase() === clean);
+      if (found) return found;
+    }
+  } catch (e) {
+    console.error("Error buscando en registro de participantes:", e);
+  }
+
+  return null;
+}
+
+function restoreParticipantState(savedData) {
+  state.participantId = savedData.id || `part_${Date.now()}`;
+  state.fullName = savedData.fullName;
+  state.startedAt = savedData.startedAt || new Date().toISOString();
+  state.completedDays = Array.isArray(savedData.completedDays) ? savedData.completedDays : [];
+  state.unlockedDay = savedData.unlockedDay || (state.completedDays.length > 0 ? Math.min(5, Math.max(...state.completedDays) + 1) : 1);
+  state.activeDay = state.unlockedDay;
+  state.activeCaseIndex = 0;
+  state.answers = savedData.answers || {};
+  state.reflections = savedData.reflections || {};
+}
+
 function handleStartChallengeClick() {
   let enteredName = dom.userFullnameInput.value.trim();
 
@@ -661,13 +690,23 @@ function handleStartChallengeClick() {
   dom.userNameError.classList.add("hidden");
   dom.userFullnameInput.style.borderColor = "var(--gray-border)";
 
-  // If new user or name changed
-  if (!state.participantId || state.fullName !== enteredName) {
+  // Check if participant already exists in the saved registry
+  const existingRecord = findSavedParticipantByName(enteredName);
+  if (existingRecord) {
+    // Restore their saved progress!
+    restoreParticipantState(existingRecord);
+    saveState(true);
+  } else if (!state.participantId || state.fullName.toLowerCase() !== enteredName.toLowerCase()) {
+    // Brand new participant
+    state.participantId = `part_${Date.now()}`;
     state.fullName = enteredName;
-    if (!state.participantId) {
-      state.participantId = `part_${Date.now()}`;
-      state.startedAt = new Date().toISOString();
-    }
+    state.startedAt = new Date().toISOString();
+    state.activeDay = 1;
+    state.activeCaseIndex = 0;
+    state.unlockedDay = 1;
+    state.completedDays = [];
+    state.answers = {};
+    state.reflections = {};
     saveState(true);
   }
 
@@ -1217,9 +1256,21 @@ function initEventListeners() {
   // Start & Fullname
   dom.btnStartChallenge.addEventListener("click", handleStartChallengeClick);
   dom.userFullnameInput.addEventListener("input", () => {
-    if (dom.userFullnameInput.value.trim().length >= 3) {
+    const val = dom.userFullnameInput.value.trim();
+    if (val.length >= 3) {
       dom.userNameError.classList.add("hidden");
       dom.userFullnameInput.style.borderColor = "var(--gray-border)";
+
+      const found = findSavedParticipantByName(val);
+      if (found) {
+        const daysCount = (found.completedDays || []).length;
+        const nextDay = found.unlockedDay || (daysCount > 0 ? Math.min(5, Math.max(...found.completedDays) + 1) : 1);
+        dom.btnStartChallengeText.textContent = daysCount >= 5 ? "VER DESAFÍO COMPLETADO" : `CONTINUAR DESAFÍO (DÍA ${nextDay})`;
+      } else {
+        dom.btnStartChallengeText.textContent = "COMENZAR DESAFÍO";
+      }
+    } else {
+      dom.btnStartChallengeText.textContent = state.fullName ? "CONTINUAR DESAFÍO" : "COMENZAR DESAFÍO";
     }
   });
   dom.userFullnameInput.addEventListener("keydown", (e) => {
