@@ -16,6 +16,18 @@ const ADMIN_CREDENTIALS = [
   { user: "admin", pass: "medipiel2026" }
 ];
 
+// Helper para normalizar nombres eliminando tildes, mayúsculas y espacios repetidos
+function normalizeName(str) {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s]/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 let allParticipants = [];
 let currentFilter = "all"; // all | completed | progress
 let searchQuery = "";
@@ -144,7 +156,10 @@ function loadParticipantsData() {
     if (activeRaw) {
       const activeData = JSON.parse(activeRaw);
       if (activeData.fullName) {
-        const existingIdx = allParticipants.findIndex(p => p.id === activeData.id || p.fullName.toLowerCase() === activeData.fullName.toLowerCase());
+        const existingIdx = allParticipants.findIndex(
+          p => (p.id && activeData.id && p.id === activeData.id) ||
+               (normalizeName(p.fullName) === normalizeName(activeData.fullName))
+        );
         if (existingIdx >= 0) {
           allParticipants[existingIdx] = { ...allParticipants[existingIdx], ...activeData };
         } else {
@@ -197,7 +212,10 @@ async function syncWithGoogleSheets(isManual = false) {
     const remoteParticipants = await window.GOOGLE_SHEETS_CONFIG.fetchParticipants();
     if (Array.isArray(remoteParticipants) && remoteParticipants.length > 0) {
       remoteParticipants.forEach(remoteP => {
-        const idx = allParticipants.findIndex(p => p.id === remoteP.id || p.fullName.toLowerCase() === remoteP.fullName.toLowerCase());
+        const idx = allParticipants.findIndex(
+          p => (p.id && remoteP.id && p.id === remoteP.id) ||
+               (normalizeName(p.fullName) === normalizeName(remoteP.fullName))
+        );
         if (idx >= 0) {
           allParticipants[idx] = { ...allParticipants[idx], ...remoteP };
         } else {

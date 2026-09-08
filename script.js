@@ -267,8 +267,72 @@ const challengeData = [
 // =========================================================================
 // 2. MULTI-PARTICIPANT STATE & LOCALSTORAGE
 // =========================================================================
+// =========================================================================
+// 2. MULTI-LAYER RESILIENT STORAGE & ACCENT NORMALIZATION (MOBILE COMPATIBLE)
+// =========================================================================
 const ACTIVE_SESSION_KEY = "medipiel_desafio_liderazgo_v1";
 const PARTICIPANTS_REGISTRY_KEY = "medipiel_participants_registry";
+
+function normalizeName(str) {
+  if (!str || typeof str !== "string") return "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remueve tildes y diacríticos (á, é, í, ó, ú, ñ)
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " "); // colapsa espacios múltiples
+}
+
+const SafeStorage = {
+  get: function(key) {
+    try {
+      const item = localStorage.getItem(key);
+      if (item) return item;
+    } catch (e) {}
+
+    try {
+      const item = sessionStorage.getItem(key);
+      if (item) return item;
+    } catch (e) {}
+
+    try {
+      const match = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)'));
+      if (match) return decodeURIComponent(match[1]);
+    } catch (e) {}
+
+    return null;
+  },
+
+  set: function(key, value) {
+    let success = false;
+    try {
+      localStorage.setItem(key, value);
+      success = true;
+    } catch (e) {
+      console.warn("Aviso: localStorage no disponible o restringido en este dispositivo:", e);
+    }
+
+    try {
+      sessionStorage.setItem(key, value);
+      success = true;
+    } catch (e) {}
+
+    try {
+      // Cookie de respaldo persistente por 1 año con SameSite=Lax
+      const expires = new Date(Date.now() + 365 * 864e5).toUTCString();
+      document.cookie = `${encodeURIComponent(key)}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+      success = true;
+    } catch (e) {}
+
+    return success;
+  },
+
+  remove: function(key) {
+    try { localStorage.removeItem(key); } catch (e) {}
+    try { sessionStorage.removeItem(key); } catch (e) {}
+    try { document.cookie = `${encodeURIComponent(key)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`; } catch (e) {}
+  }
+};
 
 const state = {
   currentView: "welcome", // welcome | map | case | reflection | completed
@@ -320,7 +384,7 @@ function scheduleCloudSync(participantData, immediate = false) {
     updateCloudSyncUI("syncing", "Guardando...");
     cloudSyncTimeout = setTimeout(() => {
       performCloudSync(participantData);
-    }, 1200);
+    }, 1000);
   }
 }
 
@@ -352,28 +416,35 @@ function saveState(immediateSync = false) {
       unlockedDay: state.unlockedDay,
       completedDays: state.completedDays,
       answers: state.answers,
-      reflections: state.reflections
+      reflections: state.reflections,
+      currentView: state.currentView
     };
 
-    // Save active session
-    localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(participantData));
+    // Guardado resiliente multi-capa (localStorage + sessionStorage + Cookies)
+    SafeStorage.set(ACTIVE_SESSION_KEY, JSON.stringify(participantData));
 
-    // Synchronize into participants registry
+    // Sincronizar en el registro histórico de participantes
     if (state.fullName && state.participantId) {
       let registry = [];
-      const rawReg = localStorage.getItem(PARTICIPANTS_REGISTRY_KEY);
+      const rawReg = SafeStorage.get(PARTICIPANTS_REGISTRY_KEY);
       if (rawReg) {
-        registry = JSON.parse(rawReg);
+        try {
+          registry = JSON.parse(rawReg);
+          if (!Array.isArray(registry)) registry = [];
+        } catch (e) {
+          registry = [];
+        }
       }
 
-      const idx = registry.findIndex(p => p.id === state.participantId || p.fullName.toLowerCase() === state.fullName.toLowerCase());
+      const cleanName = normalizeName(state.fullName);
+      const idx = registry.findIndex(p => p.id === state.participantId || (p.fullName && normalizeName(p.fullName) === cleanName));
       if (idx >= 0) {
         registry[idx] = { ...registry[idx], ...participantData };
       } else {
         registry.push(participantData);
       }
 
-      localStorage.setItem(PARTICIPANTS_REGISTRY_KEY, JSON.stringify(registry));
+      SafeStorage.set(PARTICIPANTS_REGISTRY_KEY, JSON.stringify(registry));
 
       // Sincronizar con Google Sheets en la nube
       scheduleCloudSync(participantData, immediateSync);
@@ -385,7 +456,7 @@ function saveState(immediateSync = false) {
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    const raw = SafeStorage.get(ACTIVE_SESSION_KEY);
     if (raw) {
       const data = JSON.parse(raw);
       state.participantId = data.id || null;
@@ -397,6 +468,7 @@ function loadState() {
       state.completedDays = Array.isArray(data.completedDays) ? data.completedDays : [];
       state.answers = data.answers || {};
       state.reflections = data.reflections || {};
+      state.currentView = data.currentView || "welcome";
     }
   } catch (e) {
     console.error("Error cargando sesión activa:", e);
@@ -412,9 +484,9 @@ function resetCurrentParticipantProgress() {
     state.completedDays = [];
     state.answers = {};
     state.reflections = {};
-    saveState();
+    saveState(true);
   } else {
-    localStorage.removeItem(ACTIVE_SESSION_KEY);
+    SafeStorage.remove(ACTIVE_SESSION_KEY);
     state.fullName = "";
   }
   updateHeaderProgress();
@@ -422,7 +494,7 @@ function resetCurrentParticipantProgress() {
 }
 
 function switchUserSession() {
-  localStorage.removeItem(ACTIVE_SESSION_KEY);
+  SafeStorage.remove(ACTIVE_SESSION_KEY);
   state.participantId = null;
   state.fullName = "";
   state.startedAt = null;
@@ -637,15 +709,17 @@ function updateHeaderProgress() {
 // =========================================================================
 function findSavedParticipantByName(name) {
   if (!name || typeof name !== "string") return null;
-  const clean = name.trim().toLowerCase();
+  const clean = normalizeName(name);
   if (clean.length < 3) return null;
 
   try {
-    const rawReg = localStorage.getItem(PARTICIPANTS_REGISTRY_KEY);
+    const rawReg = SafeStorage.get(PARTICIPANTS_REGISTRY_KEY);
     if (rawReg) {
       const registry = JSON.parse(rawReg);
-      const found = registry.find(p => p.fullName && p.fullName.trim().toLowerCase() === clean);
-      if (found) return found;
+      if (Array.isArray(registry)) {
+        const found = registry.find(p => p.fullName && normalizeName(p.fullName) === clean);
+        if (found) return found;
+      }
     }
   } catch (e) {
     console.error("Error buscando en registro de participantes:", e);
@@ -666,7 +740,7 @@ function restoreParticipantState(savedData) {
   state.reflections = savedData.reflections || {};
 }
 
-function handleStartChallengeClick() {
+async function handleStartChallengeClick() {
   let enteredName = dom.userFullnameInput.value.trim();
 
   // If input is empty but active participant exists, use it
@@ -690,14 +764,32 @@ function handleStartChallengeClick() {
   dom.userNameError.classList.add("hidden");
   dom.userFullnameInput.style.borderColor = "var(--gray-border)";
 
-  // Check if participant already exists in the saved registry
-  const existingRecord = findSavedParticipantByName(enteredName);
+  // 1. Buscar primero en el almacenamiento seguro del dispositivo
+  let existingRecord = findSavedParticipantByName(enteredName);
+
+  // 2. Si no está en el dispositivo pero Google Sheets está conectado, buscar en la nube
+  if (!existingRecord && window.GOOGLE_SHEETS_CONFIG && window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+    try {
+      if (dom.btnStartChallengeText) dom.btnStartChallengeText.textContent = "VERIFICANDO...";
+      const remoteList = await window.GOOGLE_SHEETS_CONFIG.fetchParticipants();
+      if (Array.isArray(remoteList)) {
+        const clean = normalizeName(enteredName);
+        const remoteFound = remoteList.find(p => p.fullName && normalizeName(p.fullName) === clean);
+        if (remoteFound) {
+          existingRecord = remoteFound;
+        }
+      }
+    } catch (err) {
+      console.warn("Aviso consultando avance en la nube:", err);
+    }
+  }
+
   if (existingRecord) {
-    // Restore their saved progress!
+    // Restaurar progreso previo (días completados, respuestas y reflexiones)
     restoreParticipantState(existingRecord);
     saveState(true);
-  } else if (!state.participantId || state.fullName.toLowerCase() !== enteredName.toLowerCase()) {
-    // Brand new participant
+  } else if (!state.participantId || normalizeName(state.fullName) !== normalizeName(enteredName)) {
+    // Nuevo participante
     state.participantId = `part_${Date.now()}`;
     state.fullName = enteredName;
     state.startedAt = new Date().toISOString();
@@ -1378,6 +1470,35 @@ function initEventListeners() {
       canvas.height = window.innerHeight;
     }
   });
+
+  // Mobile Lifecycle Events (iOS Safari & Android Chrome cambio de app o bloqueo de pantalla)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      if (state.fullName && state.participantId) {
+        saveState(true);
+        if (window.GOOGLE_SHEETS_CONFIG && window.GOOGLE_SHEETS_CONFIG.isConfigured()) {
+          window.GOOGLE_SHEETS_CONFIG.syncParticipant({
+            id: state.participantId,
+            fullName: state.fullName,
+            startedAt: state.startedAt,
+            updatedAt: new Date().toISOString(),
+            activeDay: state.activeDay,
+            activeCaseIndex: state.activeCaseIndex,
+            unlockedDay: state.unlockedDay,
+            completedDays: state.completedDays,
+            answers: state.answers,
+            reflections: state.reflections
+          }, true);
+        }
+      }
+    }
+  });
+
+  window.addEventListener("pagehide", () => {
+    if (state.fullName && state.participantId) {
+      saveState(true);
+    }
+  });
 }
 
 // =========================================================================
@@ -1475,10 +1596,20 @@ function initWelcomeInteractiveEffects() {
   }
 }
 
+function checkInAppBrowser() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+  const isInApp = /(WhatsApp|FBAN|FBAV|Instagram|Teams|Line|MicroMessenger|musical_ly)/i.test(ua);
+  if (isInApp) {
+    const tip = document.getElementById("in-app-browser-tip");
+    if (tip) tip.classList.remove("hidden");
+  }
+}
+
 // Bootstrap
 document.addEventListener("DOMContentLoaded", () => {
   loadState();
   initEventListeners();
   initWelcomeInteractiveEffects();
+  checkInAppBrowser();
   navigateToView(state.fullName ? (state.currentView || "map") : "welcome");
 });

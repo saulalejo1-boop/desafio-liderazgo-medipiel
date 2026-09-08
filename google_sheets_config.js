@@ -53,34 +53,38 @@ window.GOOGLE_SHEETS_CONFIG = {
   },
 
   /**
-   * Envía los datos del participante a Google Sheets de manera asíncrona.
+   * Envía los datos del participante a Google Sheets de manera asíncrona y resiliente para móviles.
    */
-  syncParticipant: async function(participantData) {
+  syncParticipant: async function(participantData, useBeacon = false) {
     const url = this.getUrl();
     if (!url) {
       return { success: false, reason: "not_configured" };
     }
 
+    const payloadStr = JSON.stringify(participantData);
+
+    // En móviles, al salir o cambiar de app, sendBeacon garantiza la transmisión
+    if (useBeacon && navigator.sendBeacon) {
+      try {
+        const blob = new Blob([payloadStr], { type: "text/plain;charset=utf-8" });
+        const queued = navigator.sendBeacon(url, blob);
+        if (queued) return { success: true, method: "beacon" };
+      } catch (e) {}
+    }
+
     try {
-      // Usar text/plain para evitar bloqueos por preflight CORS (OPTIONS)
-      const response = await fetch(url, {
+      // Usar mode: "no-cors" para evitar que navegadores móviles (iOS Safari, Android Chrome)
+      // bloqueen o aborten la petición por la redirección 302 hacia googleusercontent.com
+      await fetch(url, {
         method: "POST",
+        mode: "no-cors",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(participantData)
+        body: payloadStr
       });
 
-      if (response.ok) {
-        try {
-          const json = await response.json();
-          return { success: true, data: json };
-        } catch (e) {
-          return { success: true, note: "non_json_response" };
-        }
-      } else {
-        return { success: false, status: response.status };
-      }
+      return { success: true, method: "fetch" };
     } catch (error) {
       console.warn("Aviso de sincronización en segundo plano con Google Sheets:", error);
       return { success: false, error: error.message };

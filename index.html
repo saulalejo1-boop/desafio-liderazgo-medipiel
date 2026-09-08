@@ -136,6 +136,13 @@
         <div class="welcome-center-card-wrap">
           <div class="mockup-center-card anim-reveal-card" id="mockup-interactive-card">
             
+            <!-- In-App Browser Notice (WhatsApp / Teams detector) -->
+            <div id="in-app-browser-tip" class="in-app-tip-banner hidden">
+              <span class="in-app-tip-icon">💡</span>
+              <span class="in-app-tip-text">Para guardar tu progreso siempre, toca <strong>⋮</strong> o <strong>⋯</strong> y elige <em>"Abrir en navegador"</em> (Safari o Chrome).</span>
+              <button type="button" class="btn-close-tip" aria-label="Cerrar aviso" onclick="document.getElementById('in-app-browser-tip').classList.add('hidden')">&times;</button>
+            </div>
+
             <!-- Mobile Brand Logo (Visible on mobile/tablet) -->
             <div class="welcome-mobile-logo anim-stagger-item" style="--stagger-idx: 0;">
               <img src="logo.png" alt="MDP by Medipiel" class="mockup-mobile-brand-logo">
